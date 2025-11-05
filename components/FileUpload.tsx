@@ -3,13 +3,15 @@ import { UploadCloudIcon, FileIcon, XIcon } from './Icons';
 
 interface FileUploadProps {
   onFilesSelected: (files: File[]) => void;
+  disabled?: boolean;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected, disabled = false }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
       const allFiles = [...selectedFiles, ...newFiles];
@@ -21,6 +23,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    if (disabled) return;
     setIsDragging(false);
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       const newFiles = Array.from(event.dataTransfer.files);
@@ -29,16 +32,18 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
       onFilesSelected(allFiles);
       event.dataTransfer.clearData();
     }
-  }, [selectedFiles, onFilesSelected]);
+  }, [selectedFiles, onFilesSelected, disabled]);
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    if (disabled) return;
   };
   
   const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    if (disabled) return;
     setIsDragging(true);
   };
   
@@ -61,11 +66,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative flex flex-col items-center justify-center w-full p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300 ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}`}
+        className={`relative flex flex-col items-center justify-center w-full p-8 border-2 border-dashed rounded-lg transition-colors duration-300 ${
+            disabled 
+              ? 'border-slate-300 bg-slate-100 cursor-not-allowed' 
+              : isDragging 
+                ? 'border-blue-500 bg-blue-50' 
+                : 'border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer'
+        }`}
       >
-        <UploadCloudIcon className="w-12 h-12 text-slate-400 mb-4" />
-        <p className="text-lg text-slate-600">
-          <span className="font-semibold text-blue-600">Haz clic para subir</span> o arrastra y suelta
+        <UploadCloudIcon className={`w-12 h-12 mb-4 ${disabled ? 'text-slate-500' : 'text-slate-400'}`} />
+        <p className={`text-lg ${disabled ? 'text-slate-500' : 'text-slate-600'}`}>
+          <span className={`font-semibold ${disabled ? '' : 'text-blue-600'}`}>Haz clic para subir</span> o arrastra y suelta
         </p>
         <p className="text-sm text-slate-500">JPG, PNG o PDF</p>
         <input
@@ -73,8 +84,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected }) => {
           type="file"
           multiple
           accept=".jpg,.jpeg,.png,.pdf"
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           onChange={handleFileChange}
+          disabled={disabled}
         />
       </div>
       {selectedFiles.length > 0 && (
