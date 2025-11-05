@@ -1,0 +1,5 @@
+{
+  "name": "DATOS CFE",
+  "description": "An application to upload CFE billing documents (JPG, PNG, PDF) and extract specific data tables using Gemini. Users can then copy or export the extracted data as a CSV file.",
+  "requestFramePermissions": []
+}
